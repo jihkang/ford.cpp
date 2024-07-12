@@ -2,9 +2,15 @@
 #include <vector>
 #include <utility>
 #include <cmath>
+#include <algorithm>
 
 #define ipair std::pair<int, int>
-
+#define iv std::vector<int>
+#define vpair std::pair<iv, iv>
+/**
+    분할은 제대로 동작함.
+    insertion 이 제대로 동작하지 않는 현상을 발견함.
+ */
 std::size_t jacob[54] = {
     0u,
    1u,
@@ -78,6 +84,32 @@ void print_vec(std::vector<int>& v) {
     std::cout << "\n";
 }
 
+vpair set_pair(std::vector<int>& v) {
+    int mid = v.size() / 2;
+    std::vector<int> lv(mid);
+    std::vector<int> sv(mid);
+    for (int i = 0; i < mid; i++) {
+        lv[i] = v[i];
+        sv[i] = v[i + mid];
+        if (lv[i] < sv[i]) {
+            std::swap(lv[i], sv[i]);
+        }
+    }
+    // 1 -> 3 -> 2 -> 7 -> 6 -> 5 -> 4 
+    return std::make_pair(lv, sv);
+}
+
+std::vector<int> insertion(std::vector<int>& cv, std::vector<int> sv) {
+    if (sv.size() >= 1) {
+        cv.insert(
+            std::lower_bound(cv.begin(), 
+            cv.end(), sv[sv.size() - 1]), sv[sv.size() - 1]);
+        sv.pop_back();
+        return insertion(cv, sv);   
+    }
+    return cv;
+}
+
 std::vector<int> sorted(std::vector<int>& v) {
     int mid = v.size() / 2;
     std::vector<int> _cv;
@@ -101,57 +133,45 @@ std::vector<int> sorted(std::vector<int>& v) {
         pair_vector.push_back(std::make_pair(sv[i], lv[i]));
     }
     _cv = sorted(lv);
-    if (_cv.size() == 1) {
-        _cv.insert(_cv.begin(), sv[0]);
-        return _cv;
-    }
     std::vector<int> _sv(sv.size());
-    for (int i = 0; i < sv.size(); ++i) {
-        _sv[i] = (find_pair(pair_vector, lv[i]));
-    }   
+    for (int i = 0; i < _sv.size(); ++i) {
+        _sv[i] = find_pair(pair_vector, _cv[i]);
+    }
     if (odd != -1) {
         _sv.push_back(odd);
     }
-    for(int i = 1; jacob[i] <= _cv.size(); i++) {
-        int end = std::pow(2, i) - 2 > _cv.size() ? _cv.size() : std::pow(2, i) - 2;
-        if (i == 1) {
-            _cv.insert(
-                std::lower_bound(
-                    _cv.begin(),
-                    _cv.begin() + end + 1,
-                    _sv[0]
-                ),
-                _sv[0]
-            );
-            continue ;
-        }
-        for (int j = jacob[i + 1] - 1; j > jacob[i]; j--) { 
-            _cv.insert(
-                std::lower_bound(
-                    _cv.begin(),
-                    _cv.begin() + end + 1,
-                    _sv[j - 1]
-                )
-                ,_sv[j - 1]
-            );
-        }
-    }
-    std::cout << "\n";
+    std::cout << "_sv: ";    
     print_vec(_sv);
-    std::cout<< "\n ================= \n";
-
+    insertion(_cv, _sv);
+    std::cout << "_cv: ";
+    print_vec(_cv);
     return _cv;
 }
 
                  
 int main()
 {
-    int arr[] = {1,2,4,5,6,3,8,7,9,10};
+    int arr[] = {85 , 26 , 67 ,
+    31 , 36 , 24 , 56 , 39 , 14 , 94 , 6 , 83 ,
+    62 , 23 , 7 , 81 , 49 , 99 , 55 , 92 ,
+    74 , 76 , 50 , 87 , 73 , 77 , 72 , 47 ,
+  37 , 52 , 8 , 79 , 20 , 27 , 4 , 61 , 
+  30 , 9 , 16 , 57 , 59 , 44 , 53 , 1 ,
+  82 , 84 , 22 , 41 , 43 , 68 , 88 , 75 ,
+  21 , 33 , 46 , 35 , 95 , 19 , 13 ,
+  10 , 11 , 89 , 54 , 38 , 66 , 48 , 91 , 0 , 18 , 3 , 71 , 12 , 78 , 80 , 51 , 93 , 40 , 69 , 63 , 29 , 90 , 98 , 34 , 65 , 28 , 45 , 58 , 86 , 42 , 60 , 70 , 32 , 97 , 17 , 2 , 15 , 64 , 25 , 96 , 5};
     std::vector<int> v(arr, arr + (sizeof(arr) / sizeof(int)));
 
     std::vector<int> _res = sorted(v);
     for (int i = 0; i < _res.size(); ++i) {
         std::cout << _res[i] << " ";
+    }
+    sort(v.begin(), v.end());
+    for(int i = 0; i < v.size(); ++i) {
+        if (v[i] != _res[i]) {
+            std::cout << "failed\n";
+            return 1;
+        }
     }
     return 0;
 }
