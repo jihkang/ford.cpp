@@ -95,19 +95,35 @@ vpair set_pair(std::vector<int>& v) {
             std::swap(lv[i], sv[i]);
         }
     }
-    // 1 -> 3 -> 2 -> 7 -> 6 -> 5 -> 4 
     return std::make_pair(lv, sv);
 }
 
-std::vector<int> insertion(std::vector<int>& cv, std::vector<int> sv) {
-    if (sv.size() >= 1) {
-        cv.insert(
-            std::lower_bound(cv.begin(), 
-            cv.end(), sv[sv.size() - 1]), sv[sv.size() - 1]);
-        sv.pop_back();
-        return insertion(cv, sv);   
+std::vector<int> insertion(std::vector<int>& cv, std::vector<int> sv, int idx) {
+    // 1 -> 3 -> 2 -> 5 -> 4 -> 11 -> 10 -> 9 -> 8 -> 7 -> 6
+    if (jacob[idx - 1] >= cv.size()) {
+        return cv;
     }
-    return cv;
+    std::size_t start = sv.size() > jacob[idx] ? jacob[idx] : sv.size(); 
+    for (std::size_t i = start - 1; i >= jacob[idx - 1]; --i) {
+        cv.insert(
+            std::lower_bound(
+                cv.begin(), 
+                cv.end(),
+                sv[i]
+            ), sv[i]);
+        if (i == 0) {
+            break ;
+        }
+    }
+    std::cout << "\n";
+    // if (sv.size() >= 1) {
+    //     cv.insert(
+    //         std::lower_bound(cv.begin(), 
+    //         cv.end(), sv[sv.size() - 1]), sv[sv.size() - 1]);
+    //     sv.pop_back();
+    //     return insertion(cv, sv, idx + 1); 
+    // }
+    return insertion(cv, sv, idx + 1);
 }
 
 std::vector<int> sorted(std::vector<int>& v) {
@@ -142,13 +158,12 @@ std::vector<int> sorted(std::vector<int>& v) {
     }
     std::cout << "_sv: ";    
     print_vec(_sv);
-    insertion(_cv, _sv);
+    insertion(_cv, _sv, 1);
     std::cout << "_cv: ";
     print_vec(_cv);
     return _cv;
 }
 
-                 
 int main()
 {
     int arr[] = {85 , 26 , 67 ,
